@@ -1,6 +1,7 @@
 package cn.bluemobi.dylan.step.service;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -93,7 +94,7 @@ public class StepService extends Service implements SensorEventListener {
     public void onCreate() {
         super.onCreate();
         Log.d(TAG, "onCreate()");
-//        initNotification();
+        initNotification();
         initTodayData();
         initBroadcastReceiver();
         new Thread(new Runnable() {
@@ -130,8 +131,15 @@ public class StepService extends Service implements SensorEventListener {
                 .setAutoCancel(false)//设置这个标志当用户单击面板就可以让通知将自动取消
                 .setOngoing(true)//ture，设置他为一个正在进行的通知。他们通常是用来表示一个后台任务,用户积极参与(如播放音乐)或以某种方式正在等待,因此占用设备(如一个文件下载,同步操作,主动网络连接)
                ;
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            mBuilder.setChannelId("notification_id");
+        }
         Notification notification = mBuilder.build();
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel("notification_id", "notification_name", NotificationManager.IMPORTANCE_LOW);
+            mNotificationManager.createNotificationChannel(channel);
+        }
         startForeground(notifyId_Step, notification);
         Log.d(TAG, "initNotification()");
     }
@@ -267,16 +275,16 @@ public class StepService extends Service implements SensorEventListener {
      */
     private void updateNotification() {
         //设置点击跳转
-//        Intent hangIntent = new Intent();
-//        PendingIntent hangPendingIntent = PendingIntent.getActivity(this, 0, hangIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-//
-//        Notification notification = mBuilder.setContentTitle(getResources().getString(R.string.app_name))
-//                .setSmallIcon(R.mipmap.ic_launcher)
-//                .setContentText("今日步数" + CURRENT_STEP + " 步")
-//                .setWhen(System.currentTimeMillis())//通知产生的时间，会在通知信息里显示
-//                .setContentIntent(hangPendingIntent)
-//                .build();
-//        mNotificationManager.notify(notifyId_Step, notification);
+        Intent hangIntent = new Intent();
+        PendingIntent hangPendingIntent = PendingIntent.getActivity(this, 0, hangIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+        Notification notification = mBuilder.setContentTitle(getResources().getString(R.string.app_name))
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentText("今日步数" + CURRENT_STEP + " 步")
+                .setWhen(System.currentTimeMillis())//通知产生的时间，会在通知信息里显示
+                .setContentIntent(hangPendingIntent)
+                .build();
+        mNotificationManager.notify(notifyId_Step, notification);
         if (mCallback != null) {
             mCallback.updateUi(CURRENT_STEP);
         }
@@ -447,13 +455,16 @@ public class StepService extends Service implements SensorEventListener {
         if (stepSensorType == Sensor.TYPE_STEP_COUNTER) {
             //获取当前传感器返回的临时步数
             int tempStep = (int) event.values[0];
+            Log.v(TAG, "传感器返回的临时步数tempStep:"+tempStep);
             //首次如果没有获取手机系统中已有的步数则获取一次系统中APP还未开始记步的步数
             if (!hasRecord) {
                 hasRecord = true;
                 hasStepCount = tempStep;
+                Log.v(TAG, "首次传感器返回的临时步数tempStep:"+tempStep);
             } else {
                 //获取APP打开到现在的总步数=本次系统回调的总步数-APP打开之前已有的步数
                 int thisStepCount = tempStep - hasStepCount;
+                Log.v(TAG, "tempStep:"+tempStep+"------hasStepCount:"+hasStepCount);
                 //本次有效步数=（APP打开后所记录的总步数-上一次APP打开后所记录的总步数）
                 int thisStep = thisStepCount - previousStepCount;
                 //总步数=现有的步数+本次有效步数
