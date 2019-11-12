@@ -195,6 +195,7 @@ public class StepService extends Service implements SensorEventListener {
                 String action = intent.getAction();
                 if (Intent.ACTION_SCREEN_ON.equals(action)) {
                     Log.d(TAG, "screen on");
+                    duration = 30000;
                 } else if (Intent.ACTION_SCREEN_OFF.equals(action)) {
                     Log.d(TAG, "screen off");
                     //改为60秒一存储
@@ -217,11 +218,11 @@ public class StepService extends Service implements SensorEventListener {
                     isNewDay();
                 } else if (Intent.ACTION_TIME_CHANGED.equals(action)) {
                     //时间变化步数重置为0
-                    isCall();
+//                    isCall();
                     save();
                     isNewDay();
                 } else if (Intent.ACTION_TIME_TICK.equals(action)) {//日期变化步数重置为0
-                    isCall();
+//                    isCall();
 //                    Logger.d("重置步数" + StepDcretor.CURRENT_STEP);
                     save();
                     isNewDay();
