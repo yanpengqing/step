@@ -11,4 +11,6 @@ public interface UpdateUiCallBack {
      * @param stepCount 步数
      */
     void updateUi(int stepCount);
+
+    void UpdateNewDay();
 }

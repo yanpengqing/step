@@ -240,6 +240,9 @@ public class StepService extends Service implements SensorEventListener {
         String time = "00:00";
         if (time.equals(new SimpleDateFormat("HH:mm").format(new Date())) || !CURRENT_DATE.equals(getTodayDate())) {
             initTodayData();
+            if (mCallback != null) {
+                mCallback.UpdateNewDay();
+            }
         }
     }
 
